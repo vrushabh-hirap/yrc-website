@@ -6,58 +6,74 @@ import { generateToken } from '@/lib/auth';
 export async function POST(req) {
     try {
         const body = await req.json();
-        const { accountType = 'student', name, email, password, department = 'AIML' } = body;
+        const { accountType = 'student' } = body;
 
         // --- FACULTY MENTOR REGISTRATION ---
         if (accountType === 'faculty') {
+            const { name, email, password, department = 'AIML', phone } = body;
+
             if (!name || !email || !password) {
                 return NextResponse.json({ message: 'Please fill name, email, and password for faculty account' }, { status: 400 });
             }
 
-            const { data: existingUser } = await supabaseAdmin
-                .from('users')
+            const { data: existingMentor } = await supabaseAdmin
+                .from('mentors')
                 .select('id')
                 .eq('email', email.toLowerCase())
                 .single();
 
-            if (existingUser) {
-                return NextResponse.json({ message: 'Email address is already registered' }, { status: 400 });
+            if (existingMentor) {
+                return NextResponse.json({ message: 'Faculty email address is already registered' }, { status: 400 });
             }
 
             const hashedPassword = await bcrypt.hash(password, 10);
-            const { data: newFaculty, error: userErr } = await supabaseAdmin
-                .from('users')
+            const { data: newMentor, error: mentorErr } = await supabaseAdmin
+                .from('mentors')
                 .insert({
                     name,
                     email: email.toLowerCase(),
                     password: hashedPassword,
-                    role: 'faculty',
-                    department
+                    department,
+                    phone: phone || ''
                 })
-                .select()
+                .select('id, name, email, department, phone')
                 .single();
 
-            if (userErr || !newFaculty) {
-                console.error('Faculty creation error:', userErr);
+            if (mentorErr || !newMentor) {
+                console.error('Mentor creation error:', mentorErr);
                 return NextResponse.json({ message: 'Failed to create faculty mentor account' }, { status: 500 });
             }
 
-            delete newFaculty.password;
-            const token = generateToken({ id: newFaculty.id, email: newFaculty.email, role: newFaculty.role });
+            const userPayload = { ...newMentor, role: 'faculty' };
+            const token = generateToken({ id: newMentor.id, email: newMentor.email, role: 'faculty' });
 
             return NextResponse.json({
-                user: newFaculty,
+                user: userPayload,
                 token
             }, { status: 201 });
         }
 
         // --- STUDENT TEAM REGISTRATION ---
-        const { teamName, track, division, members } = body;
+        const { teamName, track, division, leader, members } = body;
 
-        if (!teamName || !track || !division || !members || members.length < 2 || members.length > 4) {
-            return NextResponse.json({ message: 'Invalid team registration details (2-4 members required)' }, { status: 400 });
+        if (!teamName || !track || !division || !leader || !members || members.length < 1 || members.length > 3) {
+            return NextResponse.json({ message: 'Invalid team details. Leader details + 1 to 3 member details required.' }, { status: 400 });
         }
 
+        // Validate Leader fields
+        if (!leader.name || !leader.email || !leader.password || !leader.prn || !leader.phone) {
+            return NextResponse.json({ message: 'Team Leader requires Name, Email, Password, PRN, and Mobile number.' }, { status: 400 });
+        }
+
+        // Validate Non-Leader Member fields
+        for (let i = 0; i < members.length; i++) {
+            const m = members[i];
+            if (!m.name || !m.email || !m.prn) {
+                return NextResponse.json({ message: `Member ${i + 2} requires Name, Email, and PRN.` }, { status: 400 });
+            }
+        }
+
+        // Check if team name already exists
         const { data: existingTeam } = await supabaseAdmin
             .from('teams')
             .select('id')
@@ -68,44 +84,39 @@ export async function POST(req) {
             return NextResponse.json({ message: 'Team name is already taken' }, { status: 400 });
         }
 
-        const memberEmails = members.map(m => m.email.toLowerCase());
-        const { data: existingUsers } = await supabaseAdmin
+        // Check if leader email is already registered
+        const { data: existingUser } = await supabaseAdmin
             .from('users')
             .select('email')
-            .in('email', memberEmails);
+            .eq('email', leader.email.toLowerCase())
+            .single();
 
-        if (existingUsers && existingUsers.length > 0) {
-            return NextResponse.json({ 
-                message: `User with email ${existingUsers[0].email} is already registered` 
-            }, { status: 400 });
+        if (existingUser) {
+            return NextResponse.json({ message: `Leader email ${leader.email} is already registered` }, { status: 400 });
         }
 
-        const createdUsers = [];
-        for (const m of members) {
-            const hashedPassword = await bcrypt.hash(m.password, 10);
-            const { data: newUser, error: userErr } = await supabaseAdmin
-                .from('users')
-                .insert({
-                    name: m.name,
-                    email: m.email.toLowerCase(),
-                    password: hashedPassword,
-                    role: 'student',
-                    phone: m.phone,
-                    prn: m.prn,
-                    department: 'AIML'
-                })
-                .select()
-                .single();
+        // Create Leader Account in `users` table
+        const hashedPassword = await bcrypt.hash(leader.password, 10);
+        const { data: leaderUser, error: userErr } = await supabaseAdmin
+            .from('users')
+            .insert({
+                name: leader.name,
+                email: leader.email.toLowerCase(),
+                password: hashedPassword,
+                role: 'student',
+                phone: leader.phone,
+                prn: leader.prn,
+                department: 'AIML'
+            })
+            .select()
+            .single();
 
-            if (userErr || !newUser) {
-                console.error('User creation error:', userErr);
-                return NextResponse.json({ message: 'Failed to create member account' }, { status: 500 });
-            }
-            createdUsers.push(newUser);
+        if (userErr || !leaderUser) {
+            console.error('User creation error:', userErr);
+            return NextResponse.json({ message: 'Failed to create team leader account' }, { status: 500 });
         }
 
-        const leaderUser = createdUsers[0];
-
+        // Generate group code (e.g. YRCA01, YRCB02)
         const { count } = await supabaseAdmin
             .from('teams')
             .select('*', { count: 'exact', head: true })
@@ -114,6 +125,7 @@ export async function POST(req) {
         const countNum = (count || 0) + 1;
         const groupCode = `YRC${division}${String(countNum).padStart(2, '0')}`;
 
+        // Create Team in `teams` table
         const { data: newTeam, error: teamErr } = await supabaseAdmin
             .from('teams')
             .insert({
@@ -132,12 +144,25 @@ export async function POST(req) {
             return NextResponse.json({ message: 'Failed to create team' }, { status: 500 });
         }
 
-        const memberJunctions = createdUsers.map(u => ({
-            team_id: newTeam.id,
-            user_id: u.id
-        }));
+        // Insert Leader into `team_members` table
+        const teamMembersToInsert = [
+            {
+                team_id: newTeam.id,
+                name: leader.name,
+                email: leader.email.toLowerCase(),
+                prn: leader.prn,
+                is_leader: true
+            },
+            ...members.map(m => ({
+                team_id: newTeam.id,
+                name: m.name,
+                email: m.email.toLowerCase(),
+                prn: m.prn,
+                is_leader: false
+            }))
+        ];
 
-        await supabaseAdmin.from('team_members').insert(memberJunctions);
+        await supabaseAdmin.from('team_members').insert(teamMembersToInsert);
 
         delete leaderUser.password;
         const token = generateToken({ id: leaderUser.id, email: leaderUser.email, role: leaderUser.role });

@@ -9,50 +9,38 @@ export async function GET(req) {
             return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
         }
 
-        // Find team where this user is a member
-        const { data: memberRel } = await supabaseAdmin
-            .from('team_members')
-            .select('team_id')
-            .eq('user_id', authPayload.id)
-            .single();
-
-        if (!memberRel) {
-            return NextResponse.json({ team: null, feedback: [] });
-        }
-
-        const teamId = memberRel.team_id;
-
-        // Fetch team with mentor details
+        // Find team led by or containing user
         const { data: team, error: teamErr } = await supabaseAdmin
             .from('teams')
             .select(`
                 *,
-                leader:leader_id(id, name, email, prn),
-                mentor:mentor_id(id, name, email, department)
+                leader:leader_id(id, name, email, prn, phone),
+                mentor:mentor_id(id, name, email, department, phone)
             `)
-            .eq('id', teamId)
+            .eq('leader_id', authPayload.id)
             .single();
 
         if (teamErr || !team) {
             return NextResponse.json({ team: null, feedback: [] });
         }
 
-        // Fetch team members
-        const { data: teamMembers } = await supabaseAdmin
+        // Fetch team members from `team_members` table
+        const { data: members } = await supabaseAdmin
             .from('team_members')
-            .select('user:user_id(id, name, email, prn, phone)')
-            .eq('team_id', teamId);
+            .select('*')
+            .eq('team_id', team.id)
+            .order('is_leader', { ascending: false });
 
-        team.members = teamMembers ? teamMembers.map(m => m.user) : [];
+        team.members = members || [];
         team.teamName = team.team_name;
         team.groupCode = team.group_code;
         team.academicYear = team.academic_year;
 
-        // Fetch paper for this team
+        // Fetch paper for team
         const { data: paper } = await supabaseAdmin
             .from('papers')
             .select('*')
-            .eq('team_id', teamId)
+            .eq('team_id', team.id)
             .single();
 
         if (paper) {

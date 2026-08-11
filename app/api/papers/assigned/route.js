@@ -9,26 +9,25 @@ export async function GET(req) {
             return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
         }
 
-        // Get teams assigned to this faculty mentor
+        // Get teams assigned to mentor
         const { data: teams, error } = await supabaseAdmin
             .from('teams')
             .select(`
                 *,
-                leader:leader_id(id, name, email, prn),
+                leader:leader_id(id, name, email, prn, phone),
                 paper:papers(*)
             `)
             .eq('mentor_id', authPayload.id);
 
         if (error) throw error;
 
-        // Populate members and format property names
         const formattedTeams = await Promise.all((teams || []).map(async (team) => {
-            const { data: teamMembers } = await supabaseAdmin
+            const { data: members } = await supabaseAdmin
                 .from('team_members')
-                .select('user:user_id(id, name, email, prn, phone)')
+                .select('*')
                 .eq('team_id', team.id);
 
-            team.members = teamMembers ? teamMembers.map(m => m.user) : [];
+            team.members = members || [];
             team.teamName = team.team_name;
             team.groupCode = team.group_code;
 

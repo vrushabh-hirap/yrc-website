@@ -20,22 +20,24 @@ const DIVISIONS = [
     { value: 'B', label: 'Division B' }
 ];
 
-const emptyMember = { name: '', email: '', password: '', phone: '', prn: '' };
-
 export default function Register() {
     const [accountType, setAccountType] = useState('student'); // 'student' or 'faculty'
 
     // Faculty form
-    const [facultyData, setFacultyData] = useState({ name: '', email: '', password: '', department: 'AIML' });
+    const [facultyData, setFacultyData] = useState({ name: '', email: '', password: '', department: 'AIML', phone: '' });
 
     // Student form steps
     const [step, setStep] = useState(1);
     const [track, setTrack] = useState('');
     const [division, setDivision] = useState('');
     const [teamName, setTeamName] = useState('');
+
+    // Leader state
+    const [leader, setLeader] = useState({ name: '', email: '', password: '', prn: '', phone: '' });
+
+    // Non-leader members (1 to 3 members; only Name, Email, PRN)
     const [members, setMembers] = useState([
-        { ...emptyMember },
-        { ...emptyMember }
+        { name: '', email: '', prn: '' }
     ]);
 
     const [loading, setLoading] = useState(false);
@@ -51,13 +53,13 @@ export default function Register() {
     };
 
     const addMember = () => {
-        if (members.length < 4) {
-            setMembers([...members, { ...emptyMember }]);
+        if (members.length < 3) {
+            setMembers([...members, { name: '', email: '', prn: '' }]);
         }
     };
 
     const removeMember = (index) => {
-        if (members.length > 2 && index > 0) {
+        if (members.length > 1) {
             setMembers(members.filter((_, i) => i !== index));
         }
     };
@@ -99,14 +101,22 @@ export default function Register() {
 
     const handleTeamSubmit = async (e) => {
         e.preventDefault();
+
+        // Validate Leader
+        if (!leader.name || !leader.email || !leader.password || !leader.prn || !leader.phone) {
+            toast.error('Please fill all fields for Team Leader (Name, Email, Password, PRN, Mobile)');
+            return;
+        }
+        if (leader.password.length < 6) {
+            toast.error('Team Leader password must be at least 6 characters');
+            return;
+        }
+
+        // Validate Members (Name, Email, PRN)
         for (let i = 0; i < members.length; i++) {
             const m = members[i];
-            if (!m.name || !m.email || !m.password || !m.phone || !m.prn) {
-                toast.error(`Please fill all fields for Member ${i + 1}`);
-                return;
-            }
-            if (m.password.length < 6) {
-                toast.error(`Password for Member ${i + 1} must be at least 6 characters`);
+            if (!m.name || !m.email || !m.prn) {
+                toast.error(`Please fill all details for Member ${i + 2} (Name, Email, PRN)`);
                 return;
             }
         }
@@ -118,6 +128,7 @@ export default function Register() {
                 teamName,
                 track,
                 division,
+                leader,
                 members
             });
             login(res.data.token, res.data.user);
@@ -192,6 +203,16 @@ export default function Register() {
                                 value={facultyData.password}
                                 onChange={(e) => setFacultyData(prev => ({ ...prev, password: e.target.value }))}
                                 required
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Mobile Number</label>
+                            <input
+                                type="tel"
+                                className="form-input"
+                                placeholder="Phone number"
+                                value={facultyData.phone}
+                                onChange={(e) => setFacultyData(prev => ({ ...prev, phone: e.target.value }))}
                             />
                         </div>
                         <div className="form-group">
@@ -305,13 +326,77 @@ export default function Register() {
                             {step === 4 && (
                                 <div>
                                     <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Team Members (2-4 Students)</h3>
+
+                                    {/* TEAM LEADER (FULL DETAILS) */}
+                                    <div className="member-card" style={{ background: '#FFF7D6', border: 'var(--nb-border)' }}>
+                                        <h3>
+                                            <span>👑 Team Leader (Member 1 - Main Login)</span>
+                                        </h3>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                                            <div className="form-group">
+                                                <label>Full Name</label>
+                                                <input
+                                                    type="text"
+                                                    className="form-input"
+                                                    placeholder="Leader Name"
+                                                    value={leader.name}
+                                                    onChange={(e) => setLeader(prev => ({ ...prev, name: e.target.value }))}
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="form-group">
+                                                <label>Email Address</label>
+                                                <input
+                                                    type="email"
+                                                    className="form-input"
+                                                    placeholder="Leader Email"
+                                                    value={leader.email}
+                                                    onChange={(e) => setLeader(prev => ({ ...prev, email: e.target.value }))}
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="form-group">
+                                                <label>Account Password</label>
+                                                <input
+                                                    type="password"
+                                                    className="form-input"
+                                                    placeholder="Min 6 characters"
+                                                    value={leader.password}
+                                                    onChange={(e) => setLeader(prev => ({ ...prev, password: e.target.value }))}
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="form-group">
+                                                <label>PRN</label>
+                                                <input
+                                                    type="text"
+                                                    className="form-input"
+                                                    placeholder="Student PRN"
+                                                    value={leader.prn}
+                                                    onChange={(e) => setLeader(prev => ({ ...prev, prn: e.target.value }))}
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                                                <label>Mobile Number</label>
+                                                <input
+                                                    type="tel"
+                                                    className="form-input"
+                                                    placeholder="Leader phone number"
+                                                    value={leader.phone}
+                                                    onChange={(e) => setLeader(prev => ({ ...prev, phone: e.target.value }))}
+                                                    required
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* OTHER TEAM MEMBERS (NAME, EMAIL, PRN ONLY) */}
                                     {members.map((member, index) => (
                                         <div className="member-card" key={index}>
                                             <h3>
-                                                <span>
-                                                    {index === 0 ? '👑 Team Leader' : `Member ${index + 1}`}
-                                                </span>
-                                                {index > 1 && (
+                                                <span>Member {index + 2} Details</span>
+                                                {members.length > 1 && (
                                                     <button
                                                         type="button"
                                                         onClick={() => removeMember(index)}
@@ -321,7 +406,7 @@ export default function Register() {
                                                     </button>
                                                 )}
                                             </h3>
-                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
                                                 <div className="form-group">
                                                     <label>Full Name</label>
                                                     <input
@@ -345,17 +430,6 @@ export default function Register() {
                                                     />
                                                 </div>
                                                 <div className="form-group">
-                                                    <label>Password</label>
-                                                    <input
-                                                        type="password"
-                                                        className="form-input"
-                                                        placeholder="Min 6 chars"
-                                                        value={member.password}
-                                                        onChange={(e) => updateMember(index, 'password', e.target.value)}
-                                                        required
-                                                    />
-                                                </div>
-                                                <div className="form-group">
                                                     <label>PRN</label>
                                                     <input
                                                         type="text"
@@ -366,24 +440,13 @@ export default function Register() {
                                                         required
                                                     />
                                                 </div>
-                                                <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                                                    <label>Phone</label>
-                                                    <input
-                                                        type="tel"
-                                                        className="form-input"
-                                                        placeholder="Phone number"
-                                                        value={member.phone}
-                                                        onChange={(e) => updateMember(index, 'phone', e.target.value)}
-                                                        required
-                                                    />
-                                                </div>
                                             </div>
                                         </div>
                                     ))}
 
-                                    {members.length < 4 && (
+                                    {members.length < 3 && (
                                         <button type="button" className="btn btn-secondary btn-sm" style={{ marginBottom: 20 }} onClick={addMember}>
-                                            <HiPlus style={{ verticalAlign: 'middle', marginRight: 4 }} /> Add Another Member
+                                            <HiPlus style={{ verticalAlign: 'middle', marginRight: 4 }} /> Add Member {members.length + 2}
                                         </button>
                                     )}
 

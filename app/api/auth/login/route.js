@@ -11,28 +11,42 @@ export async function POST(req) {
             return NextResponse.json({ message: 'Please provide email and password' }, { status: 400 });
         }
 
-        // Query user from Supabase
-        const { data: user, error } = await supabaseAdmin
+        const cleanEmail = email.toLowerCase().trim();
+
+        // 1. Check `users` table (Student Leaders & Admin)
+        const { data: user } = await supabaseAdmin
             .from('users')
             .select('*')
-            .eq('email', email.toLowerCase())
+            .eq('email', cleanEmail)
             .single();
 
-        if (error || !user) {
-            return NextResponse.json({ message: 'Invalid credentials' }, { status: 401 });
+        if (user) {
+            const isMatch = await bcrypt.compare(password, user.password);
+            if (isMatch) {
+                delete user.password;
+                const token = generateToken({ id: user.id, email: user.email, role: user.role });
+                return NextResponse.json({ user, token });
+            }
         }
 
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            return NextResponse.json({ message: 'Invalid credentials' }, { status: 401 });
+        // 2. Check `mentors` table (Faculty Mentors)
+        const { data: mentor } = await supabaseAdmin
+            .from('mentors')
+            .select('*')
+            .eq('email', cleanEmail)
+            .single();
+
+        if (mentor) {
+            const isMatch = await bcrypt.compare(password, mentor.password);
+            if (isMatch) {
+                delete mentor.password;
+                const mentorUser = { ...mentor, role: 'faculty' };
+                const token = generateToken({ id: mentor.id, email: mentor.email, role: 'faculty' });
+                return NextResponse.json({ user: mentorUser, token });
+            }
         }
 
-        // Remove password from payload
-        delete user.password;
-
-        const token = generateToken({ id: user.id, email: user.email, role: user.role });
-
-        return NextResponse.json({ user, token });
+        return NextResponse.json({ message: 'Invalid email or password' }, { status: 401 });
     } catch (err) {
         console.error('Login error:', err);
         return NextResponse.json({ message: 'Server error during login' }, { status: 500 });

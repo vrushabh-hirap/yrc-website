@@ -12,8 +12,8 @@ export async function GET(req) {
         const [{ count: totalTeams }, { count: totalPapers }, { count: totalFaculty }, { count: totalStudents }] = await Promise.all([
             supabaseAdmin.from('teams').select('*', { count: 'exact', head: true }),
             supabaseAdmin.from('papers').select('*', { count: 'exact', head: true }),
-            supabaseAdmin.from('users').select('*', { count: 'exact', head: true }).eq('role', 'faculty'),
-            supabaseAdmin.from('users').select('*', { count: 'exact', head: true }).eq('role', 'student')
+            supabaseAdmin.from('mentors').select('*', { count: 'exact', head: true }),
+            supabaseAdmin.from('team_members').select('*', { count: 'exact', head: true })
         ]);
 
         return NextResponse.json({

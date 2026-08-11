@@ -26,6 +26,7 @@ export async function POST(req) {
             .single();
 
         if (fbErr || !feedback) {
+            console.error('Feedback insert error:', fbErr);
             return NextResponse.json({ message: 'Failed to create feedback' }, { status: 500 });
         }
 

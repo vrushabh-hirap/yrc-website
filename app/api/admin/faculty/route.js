@@ -11,9 +11,8 @@ export async function GET(req) {
         }
 
         const { data: faculty, error } = await supabaseAdmin
-            .from('users')
-            .select('id, name, email, department, created_at')
-            .eq('role', 'faculty');
+            .from('mentors')
+            .select('id, name, email, department, phone, created_at');
 
         if (error) throw error;
 
@@ -31,31 +30,31 @@ export async function POST(req) {
             return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
         }
 
-        const { name, email, password, department } = await req.json();
+        const { name, email, password, department, phone } = await req.json();
 
         if (!name || !email || !password) {
-            return NextResponse.json({ message: 'Please fill all required fields' }, { status: 400 });
+            return NextResponse.json({ message: 'Please fill name, email, and password' }, { status: 400 });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        const { data: newFaculty, error } = await supabaseAdmin
-            .from('users')
+        const { data: newMentor, error } = await supabaseAdmin
+            .from('mentors')
             .insert({
                 name,
                 email: email.toLowerCase(),
                 password: hashedPassword,
-                role: 'faculty',
-                department: department || 'AIML'
+                department: department || 'AIML',
+                phone: phone || ''
             })
-            .select('id, name, email, department, role')
+            .select('id, name, email, department, phone')
             .single();
 
         if (error) {
-            return NextResponse.json({ message: 'Failed to create faculty account (Email may exist)' }, { status: 400 });
+            return NextResponse.json({ message: 'Failed to create faculty mentor account (Email may exist)' }, { status: 400 });
         }
 
-        return NextResponse.json({ message: 'Faculty account created successfully! 🎉', faculty: newFaculty }, { status: 201 });
+        return NextResponse.json({ message: 'Faculty mentor account created successfully! 🎉', faculty: newMentor }, { status: 201 });
     } catch (err) {
         console.error('Create faculty error:', err);
         return NextResponse.json({ message: 'Server error' }, { status: 500 });

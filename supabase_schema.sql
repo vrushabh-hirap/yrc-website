@@ -1,26 +1,39 @@
 -- ==========================================================================
 -- Young's Research Conference (YRC 2026) - Supabase PostgreSQL Database Schema
--- Run this complete script in the Supabase SQL Editor (https://supabase.com/dashboard/project/dyrcmjadhirysbhrfnmn/sql)
+-- Run this complete script in the Supabase SQL Editor:
+-- https://supabase.com/dashboard/project/dyrcmjadhirysbhrfnmn/sql
 -- ==========================================================================
 
 -- Enable pgcrypto for UUID generation
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
--- 1. USERS TABLE
+-- 1. USERS TABLE (For Team Leaders & Admin Accounts)
 CREATE TABLE IF NOT EXISTS public.users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
-    role VARCHAR(50) NOT NULL CHECK (role IN ('student', 'faculty', 'admin')),
-    phone VARCHAR(50),
-    prn VARCHAR(50),
+    role VARCHAR(50) NOT NULL DEFAULT 'student' CHECK (role IN ('student', 'faculty', 'admin')),
+    phone VARCHAR(50) NOT NULL,
+    prn VARCHAR(50) NOT NULL,
     department VARCHAR(100) DEFAULT 'AIML',
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 2. TEAMS TABLE
+-- 2. MENTORS TABLE (Dedicated Faculty Mentors Table)
+CREATE TABLE IF NOT EXISTS public.mentors (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    department VARCHAR(100) DEFAULT 'AIML',
+    phone VARCHAR(50),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 3. TEAMS TABLE
 CREATE TABLE IF NOT EXISTS public.teams (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     team_name VARCHAR(255) UNIQUE NOT NULL,
@@ -34,19 +47,23 @@ CREATE TABLE IF NOT EXISTS public.teams (
     group_code VARCHAR(50) UNIQUE NOT NULL,
     academic_year VARCHAR(50) DEFAULT '2025-26',
     leader_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
-    mentor_id UUID REFERENCES public.users(id) ON DELETE SET NULL,
+    mentor_id UUID REFERENCES public.mentors(id) ON DELETE SET NULL,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 3. TEAM MEMBERS JUNCTION TABLE
+-- 4. TEAM MEMBERS TABLE (Stores details for all 2-4 team members; Leader & Non-Leaders)
 CREATE TABLE IF NOT EXISTS public.team_members (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     team_id UUID REFERENCES public.teams(id) ON DELETE CASCADE,
-    user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
-    PRIMARY KEY (team_id, user_id)
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    prn VARCHAR(50) NOT NULL,
+    is_leader BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 4. PAPERS TABLE
+-- 5. PAPERS TABLE
 CREATE TABLE IF NOT EXISTS public.papers (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     team_id UUID UNIQUE REFERENCES public.teams(id) ON DELETE CASCADE,
@@ -64,26 +81,28 @@ CREATE TABLE IF NOT EXISTS public.papers (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 5. FEEDBACKS TABLE
+-- 6. FEEDBACKS TABLE
 CREATE TABLE IF NOT EXISTS public.feedbacks (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     paper_id UUID REFERENCES public.papers(id) ON DELETE CASCADE,
-    mentor_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
+    mentor_id UUID REFERENCES public.mentors(id) ON DELETE CASCADE,
     content TEXT NOT NULL,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- INDEXES FOR MAXIMUM QUERY PERFORMANCE
 CREATE INDEX IF NOT EXISTS idx_users_email ON public.users(email);
-CREATE INDEX IF NOT EXISTS idx_users_role ON public.users(role);
+CREATE INDEX IF NOT EXISTS idx_mentors_email ON public.mentors(email);
 CREATE INDEX IF NOT EXISTS idx_teams_group_code ON public.teams(group_code);
 CREATE INDEX IF NOT EXISTS idx_teams_mentor ON public.teams(mentor_id);
 CREATE INDEX IF NOT EXISTS idx_teams_track ON public.teams(track);
+CREATE INDEX IF NOT EXISTS idx_team_members_team ON public.team_members(team_id);
 CREATE INDEX IF NOT EXISTS idx_papers_team ON public.papers(team_id);
 CREATE INDEX IF NOT EXISTS idx_feedbacks_paper ON public.feedbacks(paper_id);
 
 -- ENABLE ROW LEVEL SECURITY (RLS) FOR TABLES
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.mentors ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.teams ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.team_members ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.papers ENABLE ROW LEVEL SECURITY;
@@ -92,6 +111,9 @@ ALTER TABLE public.feedbacks ENABLE ROW LEVEL SECURITY;
 -- SERVICE ROLE POLICIES (Full Access for Next.js API Routes)
 DROP POLICY IF EXISTS "Service Role Full Access Users" ON public.users;
 CREATE POLICY "Service Role Full Access Users" ON public.users FOR ALL USING (true);
+
+DROP POLICY IF EXISTS "Service Role Full Access Mentors" ON public.mentors;
+CREATE POLICY "Service Role Full Access Mentors" ON public.mentors FOR ALL USING (true);
 
 DROP POLICY IF EXISTS "Service Role Full Access Teams" ON public.teams;
 CREATE POLICY "Service Role Full Access Teams" ON public.teams FOR ALL USING (true);
@@ -120,14 +142,15 @@ CREATE POLICY "Public Upload Access for Papers" ON storage.objects FOR INSERT WI
 DROP POLICY IF EXISTS "Public Update Access for Papers" ON storage.objects;
 CREATE POLICY "Public Update Access for Papers" ON storage.objects FOR UPDATE USING (bucket_id = 'yrc-papers');
 
--- SEED DEFAULT ADMIN USER
--- Password: AdminPassword123! (bcrypt hashed)
-INSERT INTO public.users (name, email, password, role, department)
+-- SEED DEFAULT ADMIN USER & MENTORS FOR TESTING
+INSERT INTO public.users (name, email, password, role, phone, prn, department)
 VALUES (
     'YRC Admin',
     'admin@pccoepune.org',
     '$2a$10$eE0mQoQ7zD1a2Ww.E7N1vO.R4dD4yX4z4K4L4M4N4O4P4Q4R4S4T4',
     'admin',
+    '9999999999',
+    'ADMIN01',
     'AIML'
 )
 ON CONFLICT (email) DO NOTHING;

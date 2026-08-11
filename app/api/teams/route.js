@@ -17,7 +17,7 @@ export async function GET(req) {
             .from('teams')
             .select(`
                 *,
-                leader:leader_id(id, name, email, prn),
+                leader:leader_id(id, name, email, prn, phone),
                 mentor:mentor_id(id, name, email, department),
                 paper:papers(*)
             `)
@@ -30,12 +30,12 @@ export async function GET(req) {
         if (error) throw error;
 
         const formattedTeams = await Promise.all((teams || []).map(async (team) => {
-            const { data: teamMembers } = await supabaseAdmin
+            const { data: members } = await supabaseAdmin
                 .from('team_members')
-                .select('user:user_id(id, name, email, prn, phone)')
+                .select('*')
                 .eq('team_id', team.id);
 
-            team.members = teamMembers ? teamMembers.map(m => m.user) : [];
+            team.members = members || [];
             team.teamName = team.team_name;
             team.groupCode = team.group_code;
             team.academicYear = team.academic_year;
