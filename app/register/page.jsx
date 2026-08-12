@@ -148,21 +148,19 @@ export default function Register() {
                 <h1>Registration Portal</h1>
                 <p>Choose your account type to register for Young's Research Conference</p>
 
-                {/* Account Type Selector */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 28 }}>
+                {/* iOS-style segmented control */}
+                <div className="seg-control" style={{ marginBottom: 28 }}>
                     <button
                         type="button"
-                        className={`btn ${accountType === 'student' ? 'btn-primary' : 'btn-secondary'}`}
+                        className={`seg-btn ${accountType === 'student' ? 'seg-btn-active' : ''}`}
                         onClick={() => setAccountType('student')}
-                        style={{ padding: '12px 16px', fontSize: 15 }}
                     >
                         <HiUserGroup /> Student Team
                     </button>
                     <button
                         type="button"
-                        className={`btn ${accountType === 'faculty' ? 'btn-primary' : 'btn-secondary'}`}
+                        className={`seg-btn ${accountType === 'faculty' ? 'seg-btn-active' : ''}`}
                         onClick={() => setAccountType('faculty')}
-                        style={{ padding: '12px 16px', fontSize: 15 }}
                     >
                         <HiAcademicCap /> Faculty Mentor
                     </button>
@@ -287,8 +285,8 @@ export default function Register() {
                                             </button>
                                         ))}
                                     </div>
-                                    <div style={{ padding: '12px 16px', background: 'var(--nb-yellow)', border: 'var(--nb-border-sm)', borderRadius: 8, marginBottom: 20, fontSize: 13, fontWeight: 700 }}>
-                                        Track: {track}
+                                    <div className="glass-pill" style={{ marginBottom: 20, fontSize: 13 }}>
+                                        ✓ Track: {track}
                                     </div>
                                     <div className="form-buttons">
                                         <button type="button" className="btn btn-secondary" onClick={() => setStep(1)}>Back</button>
@@ -328,7 +326,7 @@ export default function Register() {
                                     <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Team Members (2-4 Students)</h3>
 
                                     {/* TEAM LEADER (FULL DETAILS) */}
-                                    <div className="member-card" style={{ background: '#FFF7D6', border: 'var(--nb-border)' }}>
+                                    <div className="member-card leader-card">
                                         <h3>
                                             <span>👑 Team Leader (Member 1 - Main Login)</span>
                                         </h3>

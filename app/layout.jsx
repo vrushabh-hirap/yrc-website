@@ -14,7 +14,7 @@ export default function RootLayout({ children }) {
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700;800&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
       </head>
       <body>
         <AuthProvider>
@@ -24,14 +24,17 @@ export default function RootLayout({ children }) {
           </main>
           <Toaster position="top-right" toastOptions={{
               style: {
-                  borderRadius: '10px',
-                  background: '#2563EB',
-                  color: '#FFFFFF',
-                  border: '3px solid #0F172A',
-                  boxShadow: '4px 4px 0px #0F172A',
-                  fontFamily: "'Space Grotesk', sans-serif",
-                  fontWeight: 700,
-                  fontSize: '15px'
+                  borderRadius: '9999px',
+                  background: 'rgba(255, 255, 255, 0.92)',
+                  backdropFilter: 'blur(20px)',
+                  WebkitBackdropFilter: 'blur(20px)',
+                  color: '#1d1d1f',
+                  border: '1px solid #e0e0e0',
+                  boxShadow: '0 8px 30px rgba(0, 0, 0, 0.12)',
+                  fontFamily: "'SF Pro Text', -apple-system, sans-serif",
+                  fontWeight: 500,
+                  fontSize: '14px',
+                  padding: '10px 20px'
               }
           }} />
         </AuthProvider>

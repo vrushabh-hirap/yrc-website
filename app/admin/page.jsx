@@ -307,8 +307,8 @@ export default function AdminDashboard() {
 
             {/* Faculty Creation Modal */}
             {showFacultyModal && (
-                <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
-                    <div className="auth-card" style={{ width: '100%', maxWidth: 480, margin: 20 }}>
+                <div className="modal-overlay">
+                    <div className="auth-card glass-modal" style={{ width: '100%', maxWidth: 480, margin: 20 }}>
                         <h2>Create Faculty Mentor Account</h2>
                         <form onSubmit={handleCreateFaculty} style={{ marginTop: 20 }}>
                             <div className="form-group">

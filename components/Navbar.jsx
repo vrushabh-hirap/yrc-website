@@ -29,75 +29,102 @@ export default function Navbar() {
     const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
     return (
-        <nav className="navbar">
-            <div className="navbar-inner">
-                <Link href="/" className="navbar-brand" onClick={closeMobileMenu}>
-                    <div className="brand-icon-wrapper">
-                        <span className="brand-icon"><HiAcademicCap /></span>
+        <div className="nav-wrapper">
+            {/* Top Global Navigation Bar (Pure Black 44px) */}
+            <div className="global-nav">
+                <div className="global-nav-inner">
+                    <div className="global-nav-brand">
+                        <span>PCCOE AIML</span>
+                        <span style={{ opacity: 0.4 }}>|</span>
+                        <span style={{ fontWeight: 400 }}>Young's Research Conference 2026</span>
                     </div>
-                    <span className="brand-text">YRC 2026</span>
-                </Link>
 
-                <div className="navbar-links desktop">
-                    {user ? (
-                        <>
-                            {/* Order 1: User Name & Role */}
-                            <span className="user-nav-badge">
+                    <div className="global-nav-links">
+                        <a href="https://www.pccoepune.org" target="_blank" rel="noopener noreferrer">PCCOE Main Portal</a>
+                        <Link href="/previous-papers">Past Research Papers</Link>
+                        {user && (
+                            <span className="global-user-badge">
                                 👤 {user.name} ({user.role.toUpperCase()})
                             </span>
-
-                            {/* Order 2: Dashboard */}
-                            <Link href={getDashboardLink()}>
-                                Dashboard
-                            </Link>
-
-                            {/* Order 3: Logout */}
-                            <button className="btn-logout" onClick={handleLogout}>Logout</button>
-
-                            {/* Order 4: Icon Only Light / Dark Toggle */}
-                            <ThemeToggle />
-                        </>
-                    ) : (
-                        <>
-                            <Link href="/login">Login</Link>
-                            <Link href="/register" className="btn-nav-primary">Register Team</Link>
-                            <ThemeToggle />
-                        </>
-                    )}
-                </div>
-
-                <div className="mobile-nav-actions">
-                    <div className="mobile-theme-toggle">
-                        <ThemeToggle />
+                        )}
                     </div>
-                    <button 
-                        className="mobile-menu-toggle" 
-                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                        aria-label="Toggle menu"
-                    >
-                        {isMobileMenuOpen ? <HiXMark /> : <HiBars3 />}
-                    </button>
                 </div>
             </div>
 
-            {isMobileMenuOpen && (
-                <div className="mobile-menu">
-                    {user ? (
-                        <>
-                            <div className="user-nav-badge-mobile">
-                                👤 {user.name} ({user.role.toUpperCase()})
-                            </div>
-                            <Link href={getDashboardLink()} onClick={closeMobileMenu}>Dashboard</Link>
-                            <button className="btn-logout" onClick={handleLogout}>Logout</button>
-                        </>
-                    ) : (
-                        <>
-                            <Link href="/login" onClick={closeMobileMenu}>Login</Link>
-                            <Link href="/register" className="btn-nav-primary" onClick={closeMobileMenu}>Register Team</Link>
-                        </>
-                    )}
+            {/* Sub-Nav Frosted Glass Strip (52px Height) */}
+            <nav className="navbar">
+                <div className="navbar-inner">
+                    <Link href="/" className="navbar-brand" onClick={closeMobileMenu}>
+                        <div className="brand-icon">
+                            <HiAcademicCap />
+                        </div>
+                        <span>YRC 2026</span>
+                    </Link>
+
+                    <div className="navbar-links">
+                        <Link href="/#tracks">Tracks</Link>
+                        <Link href="/#timeline">Roadmap</Link>
+                        <Link href="/#faq">FAQs</Link>
+
+                        {user ? (
+                            <>
+                                <Link href={getDashboardLink()} className="btn btn-primary btn-sm">
+                                    Dashboard
+                                </Link>
+                                <button className="btn btn-logout btn-sm" onClick={handleLogout}>
+                                    Logout
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <Link href="/login" style={{ fontWeight: 500 }}>
+                                    Login
+                                </Link>
+                                <Link href="/register" className="btn btn-primary btn-sm">
+                                    Register Team
+                                </Link>
+                            </>
+                        )}
+                        <ThemeToggle />
+                    </div>
+
+                    <div className="mobile-nav-actions">
+                        <ThemeToggle />
+                        <button
+                            className="mobile-menu-toggle"
+                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                            aria-label="Toggle menu"
+                        >
+                            {isMobileMenuOpen ? <HiXMark /> : <HiBars3 />}
+                        </button>
+                    </div>
                 </div>
-            )}
-        </nav>
+
+                {isMobileMenuOpen && (
+                    <div className="mobile-menu">
+                        {user ? (
+                            <>
+                                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--primary-on-dark)', marginBottom: 8 }}>
+                                    Logged in as {user.name} ({user.role.toUpperCase()})
+                                </div>
+                                <Link href={getDashboardLink()} onClick={closeMobileMenu} className="btn btn-primary" style={{ width: '100%' }}>
+                                    Dashboard
+                                </Link>
+                                <button className="btn btn-logout" onClick={handleLogout} style={{ width: '100%', marginTop: 6 }}>
+                                    Logout
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <Link href="/login" onClick={closeMobileMenu}>Login</Link>
+                                <Link href="/register" className="btn btn-primary" onClick={closeMobileMenu} style={{ width: '100%' }}>
+                                    Register Team
+                                </Link>
+                            </>
+                        )}
+                    </div>
+                )}
+            </nav>
+        </div>
     );
 }

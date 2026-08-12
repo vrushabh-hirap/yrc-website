@@ -46,25 +46,23 @@ export default function Login() {
         <div className="auth-page">
             <div className="auth-card">
                 <h1>Welcome Back</h1>
-                <p className="auth-subtitle">Select your role & sign in</p>
+                <p className="auth-subtitle">Select your role & sign in to YRC Portal</p>
 
-                {/* 2-Way Role Switcher: Student vs Faculty ONLY */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 24 }}>
+                {/* Apple-style Segmented Role Control */}
+                <div className="seg-control">
                     <button
                         type="button"
-                        className={`btn ${selectedRole === 'student' ? 'btn-primary' : 'btn-secondary'}`}
+                        className={`seg-btn ${selectedRole === 'student' ? 'seg-btn-active' : ''}`}
                         onClick={() => setSelectedRole('student')}
-                        style={{ padding: '12px 16px', fontSize: 14 }}
                     >
-                        <HiUserGroup /> Student
+                        <HiUserGroup /> Student Team
                     </button>
                     <button
                         type="button"
-                        className={`btn ${selectedRole === 'faculty' ? 'btn-primary' : 'btn-secondary'}`}
+                        className={`seg-btn ${selectedRole === 'faculty' ? 'seg-btn-active' : ''}`}
                         onClick={() => setSelectedRole('faculty')}
-                        style={{ padding: '12px 16px', fontSize: 14 }}
                     >
-                        <HiAcademicCap /> Faculty
+                        <HiAcademicCap /> Faculty Mentor
                     </button>
                 </div>
 
@@ -93,14 +91,14 @@ export default function Login() {
                             required
                         />
                     </div>
-                    <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%', marginTop: 8 }} disabled={loading}>
-                        {loading ? 'Logging in...' : `Login as ${selectedRole === 'faculty' ? 'Faculty Mentor' : 'Student Team'}`}
+                    <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: 8 }} disabled={loading}>
+                        {loading ? 'Signing in...' : `Login as ${selectedRole === 'faculty' ? 'Faculty Mentor' : 'Student Team'}`}
                     </button>
                 </form>
 
-                <p style={{ textAlign: 'center', marginTop: 24, fontSize: 14, fontWeight: 700 }}>
+                <p style={{ textAlign: 'center', marginTop: 24, fontSize: 14, color: 'var(--ink-muted-80)' }}>
                     Don't have an account?{' '}
-                    <Link href="/register" style={{ color: 'var(--text)', textDecoration: 'underline' }}>
+                    <Link href="/register" style={{ color: 'var(--primary)', fontWeight: 500 }}>
                         Register your team or faculty account
                     </Link>
                 </p>

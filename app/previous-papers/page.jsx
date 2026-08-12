@@ -1,8 +1,9 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { HiArrowLeft, HiUsers, HiAcademicCap, HiArrowDownTray } from 'react-icons/hi2';
+import { HiArrowLeft, HiUsers, HiAcademicCap, HiArrowDownTray, HiMagnifyingGlass } from 'react-icons/hi2';
 
 const previousPapers = [
     {
@@ -50,6 +51,14 @@ const previousPapers = [
 ];
 
 export default function PreviousPapers() {
+    const [searchQuery, setSearchQuery] = useState('');
+
+    const filteredPapers = previousPapers.filter(paper =>
+        paper.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        paper.team.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        paper.track.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
     return (
         <div className="page-container">
             <header className="page-header">
@@ -57,9 +66,22 @@ export default function PreviousPapers() {
                     <HiArrowLeft /> Back to Home
                 </Link>
                 <h1>Past Research Papers Gallery</h1>
-                <p style={{ marginTop: 8 }}>
+                <p style={{ marginTop: 8, color: 'var(--ink-muted-80)' }}>
                     Explore outstanding research work published by alumni of the PCCOE AIML Department.
                 </p>
+
+                {/* Apple Search Input Pill */}
+                <div style={{ marginTop: 24, position: 'relative', maxWidth: 480 }}>
+                    <input
+                        type="text"
+                        className="search-input"
+                        placeholder="Search by title, author, or track..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        style={{ width: '100%', paddingLeft: 44 }}
+                    />
+                    <HiMagnifyingGlass style={{ position: 'absolute', left: 16, top: 14, fontSize: 18, color: 'var(--ink-muted-48)' }} />
+                </div>
             </header>
 
             <motion.div
@@ -68,38 +90,40 @@ export default function PreviousPapers() {
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.5 }}
             >
-                {previousPapers.map((paper, index) => (
+                {filteredPapers.map((paper, index) => (
                     <motion.div
                         key={index}
-                        className="paper-card"
-                        initial={{ opacity: 0, y: 20 }}
+                        className="store-utility-card paper-card"
+                        initial={{ opacity: 0, y: 16 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        transition={{ delay: index * 0.08 }}
+                        transition={{ delay: index * 0.06 }}
                     >
-                        <div className="paper-track-badge">{paper.track}</div>
-                        <h3 className="paper-title">{paper.title}</h3>
+                        <div>
+                            <span className="badge">{paper.track}</span>
+                            <h3 className="paper-title" style={{ marginTop: 12 }}>{paper.title}</h3>
 
-                        <div className="paper-details">
-                            <div className="detail-item">
-                                <HiUsers className="detail-icon" />
-                                <div>
-                                    <span style={{ fontWeight: 800 }}>Team: </span>
-                                    <span>{paper.team}</span>
+                            <div className="paper-details">
+                                <div className="detail-item">
+                                    <HiUsers className="detail-icon" />
+                                    <div>
+                                        <span style={{ fontWeight: 600 }}>Team: </span>
+                                        <span>{paper.team}</span>
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="detail-item">
-                                <HiAcademicCap className="detail-icon" />
-                                <div>
-                                    <span style={{ fontWeight: 800 }}>Mentor: </span>
-                                    <span>{paper.mentor}</span>
+                                <div className="detail-item">
+                                    <HiAcademicCap className="detail-icon" />
+                                    <div>
+                                        <span style={{ fontWeight: 600 }}>Mentor: </span>
+                                        <span>{paper.mentor}</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
                         <div className="paper-footer">
-                            <span className="paper-year">{paper.year} Edition</span>
-                            <button className="btn btn-primary btn-sm" onClick={() => alert('Sample paper download')}>
+                            <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--ink-muted-80)' }}>{paper.year} Edition</span>
+                            <button className="btn btn-primary btn-sm" onClick={() => alert('Sample paper download requested')}>
                                 <HiArrowDownTray /> Sample PDF
                             </button>
                         </div>
