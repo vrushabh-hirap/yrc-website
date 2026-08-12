@@ -3,6 +3,9 @@ import bcrypt from 'bcryptjs';
 import { supabaseAdmin } from '@/lib/supabase';
 import { generateToken } from '@/lib/auth';
 
+const ADMIN_EMAIL = 'admin@pccoepune.org';
+const ADMIN_HASH = '$2b$10$TbqcFMtnpd6k9dvsYXVATOZQdvqSsTaidSH5Nc5BoXtKhRdFVsFbG'; // bcrypt hash for 'admin123'
+
 export async function POST(req) {
     try {
         const { email, password } = await req.json();
@@ -12,6 +15,46 @@ export async function POST(req) {
         }
 
         const cleanEmail = email.toLowerCase().trim();
+
+        // Admin fallback auto-seeding
+        if (cleanEmail === ADMIN_EMAIL && password === 'admin123') {
+            let { data: adminUser } = await supabaseAdmin
+                .from('users')
+                .select('*')
+                .eq('email', ADMIN_EMAIL)
+                .single();
+
+            if (!adminUser) {
+                const { data: createdAdmin } = await supabaseAdmin
+                    .from('users')
+                    .insert({
+                        name: 'YRC Admin',
+                        email: ADMIN_EMAIL,
+                        password: ADMIN_HASH,
+                        role: 'admin',
+                        phone: '9999999999',
+                        prn: 'ADMIN01',
+                        department: 'AIML'
+                    })
+                    .select()
+                    .single();
+                adminUser = createdAdmin;
+            } else if (adminUser.role !== 'admin' || !await bcrypt.compare('admin123', adminUser.password)) {
+                const { data: updatedAdmin } = await supabaseAdmin
+                    .from('users')
+                    .update({ password: ADMIN_HASH, role: 'admin' })
+                    .eq('email', ADMIN_EMAIL)
+                    .select()
+                    .single();
+                adminUser = updatedAdmin;
+            }
+
+            if (adminUser) {
+                delete adminUser.password;
+                const token = generateToken({ id: adminUser.id, email: adminUser.email, role: 'admin' });
+                return NextResponse.json({ user: adminUser, token });
+            }
+        }
 
         // 1. Check `users` table (Student Leaders & Admin)
         const { data: user } = await supabaseAdmin

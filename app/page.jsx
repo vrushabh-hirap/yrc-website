@@ -12,28 +12,28 @@ const tracks = [
         desc: 'Neural networks, deep learning, NLP, computer vision, and generative AI.',
         icon: <HiCpuChip />,
         badge: 'TRACK 01',
-        color: 'var(--nb-yellow)'
+        color: '#2563EB'
     },
     {
         name: 'Data Science & Analytics',
         desc: 'Data mining, big data, visualization, and statistical modeling.',
         icon: <HiChartBar />,
         badge: 'TRACK 02',
-        color: 'var(--nb-pink)'
+        color: '#38BDF8'
     },
     {
         name: 'IoT & Embedded Systems',
         desc: 'Smart devices, sensor networks, edge computing, and automation.',
         icon: <HiSignal />,
         badge: 'TRACK 03',
-        color: 'var(--nb-cyan)'
+        color: '#6366F1'
     },
     {
         name: 'Cybersecurity & Blockchain',
         desc: 'Network security, cryptography, distributed ledger, and ethical hacking.',
         icon: <HiShieldCheck />,
         badge: 'TRACK 04',
-        color: 'var(--nb-green)'
+        color: '#0EA5E9'
     }
 ];
 
@@ -131,19 +131,19 @@ export default function Home() {
             {/* Announcement Marquee Ticker */}
             <div className="marquee-banner">
                 <div className="marquee-content">
-                    <span>🔥 YRC 2026 SUBMISSIONS ARE NOW OPEN</span>
-                    <span>⚡ PCCOE AIML DEPARTMENT</span>
+                    <span>⚡ YRC 2026 SUBMISSIONS ARE NOW OPEN</span>
+                    <span>🚀 PCCOE AIML DEPARTMENT</span>
                     <span>🎓 REGISTRATION DEADLINE APPROACHING</span>
-                    <span>🚀 4 CUTTING-EDGE TRACKS</span>
-                    <span>🔥 YRC 2026 SUBMISSIONS ARE NOW OPEN</span>
-                    <span>⚡ PCCOE AIML DEPARTMENT</span>
+                    <span>⚡ 4 CUTTING-EDGE TRACKS</span>
+                    <span>⚡ YRC 2026 SUBMISSIONS ARE NOW OPEN</span>
+                    <span>🚀 PCCOE AIML DEPARTMENT</span>
                     <span>🎓 REGISTRATION DEADLINE APPROACHING</span>
-                    <span>🚀 4 CUTTING-EDGE TRACKS</span>
+                    <span>⚡ 4 CUTTING-EDGE TRACKS</span>
                 </div>
             </div>
 
             {/* Hero Section */}
-            <section className="hero" style={{ height: 'calc(100vh - 110px)', display: 'flex', alignItems: 'center', position: 'sticky', top: '72px', zIndex: 0 }}>
+            <section className="hero" style={{ minHeight: 'calc(100vh - 120px)', display: 'flex', alignItems: 'center', position: 'relative', zIndex: 1 }}>
                 <Antigravity
                     count={240}
                     magnetRadius={7}
@@ -152,7 +152,7 @@ export default function Home() {
                     waveAmplitude={1.0}
                     particleSize={2.0}
                     lerpSpeed={0.03}
-                    color="#FFDE59"
+                    color="#38BDF8"
                     autoAnimate
                     particleVariance={1.5}
                     rotationSpeed={0.001}
@@ -161,6 +161,7 @@ export default function Home() {
                     particleShape="capsule"
                     fieldStrength={9}
                 />
+
                 <motion.div
                     className="hero-content"
                     initial={{ opacity: 0, scale: 0.92, y: 30 }}
@@ -196,7 +197,7 @@ export default function Home() {
                 </motion.div>
             </section>
 
-            <div style={{ position: 'relative', zIndex: 1, backgroundColor: 'var(--nb-bg)' }}>
+            <div style={{ position: 'relative', zIndex: 2, backgroundColor: 'var(--bg)', paddingTop: '60px' }}>
                 {/* Conference Tracks */}
                 <section className="tracks-section" id="tracks">
                     <motion.div

@@ -142,15 +142,18 @@ CREATE POLICY "Public Upload Access for Papers" ON storage.objects FOR INSERT WI
 DROP POLICY IF EXISTS "Public Update Access for Papers" ON storage.objects;
 CREATE POLICY "Public Update Access for Papers" ON storage.objects FOR UPDATE USING (bucket_id = 'yrc-papers');
 
--- SEED DEFAULT ADMIN USER & MENTORS FOR TESTING
+-- SEED DEFAULT ADMIN USER FOR TESTING
+-- Email: admin@pccoepune.org
+-- Password: admin123
 INSERT INTO public.users (name, email, password, role, phone, prn, department)
 VALUES (
     'YRC Admin',
     'admin@pccoepune.org',
-    '$2a$10$eE0mQoQ7zD1a2Ww.E7N1vO.R4dD4yX4z4K4L4M4N4O4P4Q4R4S4T4',
+    '$2b$10$TbqcFMtnpd6k9dvsYXVATOZQdvqSsTaidSH5Nc5BoXtKhRdFVsFbG',
     'admin',
     '9999999999',
     'ADMIN01',
     'AIML'
 )
-ON CONFLICT (email) DO NOTHING;
+ON CONFLICT (email) DO UPDATE SET password = '$2b$10$TbqcFMtnpd6k9dvsYXVATOZQdvqSsTaidSH5Nc5BoXtKhRdFVsFbG', role = 'admin';
+

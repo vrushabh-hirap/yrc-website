@@ -23,9 +23,8 @@ export default function Login() {
             const res = await loginUser({ email, password });
             const user = res.data.user;
 
-            // Optional role check notice
             if (user.role !== selectedRole && user.role !== 'admin') {
-                toast.error(`This account is registered as a ${user.role}. Redirecting to your ${user.role} dashboard.`);
+                toast.error(`This account is registered as ${user.role.toUpperCase()}. Redirecting to your dashboard.`);
             } else {
                 toast.success(`Welcome back, ${user.name}! 🎉`);
             }
@@ -37,7 +36,7 @@ export default function Login() {
             else if (user.role === 'admin') router.push('/admin');
             else router.push('/');
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Login failed');
+            toast.error(err.response?.data?.message || 'Invalid email or password');
         } finally {
             setLoading(false);
         }
@@ -47,9 +46,9 @@ export default function Login() {
         <div className="auth-page">
             <div className="auth-card">
                 <h1>Welcome Back</h1>
-                <p className="auth-subtitle">Select your role & login to your conference dashboard</p>
+                <p className="auth-subtitle">Select your role & sign in</p>
 
-                {/* Role Switcher */}
+                {/* 2-Way Role Switcher: Student vs Faculty ONLY */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 24 }}>
                     <button
                         type="button"
@@ -57,7 +56,7 @@ export default function Login() {
                         onClick={() => setSelectedRole('student')}
                         style={{ padding: '12px 16px', fontSize: 14 }}
                     >
-                        <HiUserGroup /> Student Team
+                        <HiUserGroup /> Student
                     </button>
                     <button
                         type="button"
@@ -65,13 +64,15 @@ export default function Login() {
                         onClick={() => setSelectedRole('faculty')}
                         style={{ padding: '12px 16px', fontSize: 14 }}
                     >
-                        <HiAcademicCap /> Faculty Mentor
+                        <HiAcademicCap /> Faculty
                     </button>
                 </div>
 
                 <form onSubmit={handleSubmit}>
                     <div className="form-group">
-                        <label>{selectedRole === 'faculty' ? 'Faculty Email Address' : 'Student Email Address'}</label>
+                        <label>
+                            {selectedRole === 'faculty' ? 'Faculty Email Address' : 'Student Leader Email Address'}
+                        </label>
                         <input
                             type="email"
                             className="form-input"
@@ -99,8 +100,8 @@ export default function Login() {
 
                 <p style={{ textAlign: 'center', marginTop: 24, fontSize: 14, fontWeight: 700 }}>
                     Don't have an account?{' '}
-                    <Link href="/register" style={{ color: 'var(--nb-black)', textDecoration: 'underline' }}>
-                        Register your team or mentor account
+                    <Link href="/register" style={{ color: 'var(--text)', textDecoration: 'underline' }}>
+                        Register your team or faculty account
                     </Link>
                 </p>
             </div>

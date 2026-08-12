@@ -25,10 +25,10 @@ export default function RootLayout({ children }) {
           <Toaster position="top-right" toastOptions={{
               style: {
                   borderRadius: '10px',
-                  background: '#FFDE59',
-                  color: '#0F0F0F',
-                  border: '3px solid #0F0F0F',
-                  boxShadow: '4px 4px 0px #0F0F0F',
+                  background: '#2563EB',
+                  color: '#FFFFFF',
+                  border: '3px solid #0F172A',
+                  boxShadow: '4px 4px 0px #0F172A',
                   fontFamily: "'Space Grotesk', sans-serif",
                   fontWeight: 700,
                   fontSize: '15px'
