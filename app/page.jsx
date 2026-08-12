@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { HiAcademicCap, HiUsers, HiDocumentText, HiChatBubbleLeftRight, HiCpuChip, HiChartBar, HiSignal, HiShieldCheck, HiSparkles, HiArrowRight } from 'react-icons/hi2';
 import { motion, useScroll, useSpring, AnimatePresence } from 'framer-motion';
@@ -111,6 +111,8 @@ const fadeInUp = {
 
 export default function Home() {
     const timelineRef = useRef(null);
+    const [particleColor, setParticleColor] = useState('#0066cc');
+
     const { scrollYProgress } = useScroll({
         target: timelineRef,
         offset: ["start end", "end end"]
@@ -121,6 +123,18 @@ export default function Home() {
         damping: 30,
         restDelta: 0.001
     });
+
+    useEffect(() => {
+        const updateThemeColor = () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            setParticleColor(currentTheme === 'dark' ? '#2997ff' : '#0066cc');
+        };
+
+        updateThemeColor();
+        const observer = new MutationObserver(updateThemeColor);
+        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+        return () => observer.disconnect();
+    }, []);
 
     return (
         <div>
@@ -138,17 +152,17 @@ export default function Home() {
                 </div>
             </div>
 
-            {/* Tile 1: Dark Hero Canvas (Full-Bleed #272729) */}
-            <section className="product-tile-dark hero">
+            {/* Section 1: Hero Canvas (Light & Dark Theme Native) */}
+            <section className="hero">
                 <Antigravity
-                    count={200}
+                    count={180}
                     magnetRadius={6}
                     ringRadius={8}
                     waveSpeed={0.2}
                     waveAmplitude={0.8}
                     particleSize={1.8}
                     lerpSpeed={0.03}
-                    color="#2997ff"
+                    color={particleColor}
                     autoAnimate
                     particleVariance={1.2}
                     rotationSpeed={0.001}
@@ -189,8 +203,8 @@ export default function Home() {
                 </motion.div>
             </section>
 
-            {/* Tile 2: Parchment Tracks Tile (Full-Bleed #f5f5f7) */}
-            <section className="product-tile-parchment" id="tracks">
+            {/* Section 2: Conference Tracks (Parchement in Light / Darker in Dark Mode) */}
+            <section className="section-tracks" id="tracks">
                 <motion.div
                     className="section-title"
                     initial={{ opacity: 0, y: 20 }}
@@ -226,8 +240,8 @@ export default function Home() {
                 </motion.div>
             </section>
 
-            {/* Tile 3: Light Event Timeline Tile (Full-Bleed #ffffff) */}
-            <section className="product-tile-light" id="timeline" ref={timelineRef}>
+            {/* Section 3: Event Timeline Roadmap */}
+            <section className="section-timeline" id="timeline" ref={timelineRef}>
                 <motion.div
                     className="section-title"
                     initial={{ opacity: 0, y: 20 }}
@@ -269,15 +283,15 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* Tile 4: Dark How-It-Works Tile (Full-Bleed #2a2a2c) */}
-            <section className="product-tile-dark-2">
+            {/* Section 4: How It Works (White in Light Mode per user request!) */}
+            <section className="section-how-it-works">
                 <motion.div
                     className="section-title"
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                 >
-                    <span className="badge" style={{ marginBottom: 12, backgroundColor: 'rgba(255, 255, 255, 0.1)', color: '#ffffff', borderColor: 'rgba(255, 255, 255, 0.2)' }}>
+                    <span className="badge badge-primary" style={{ marginBottom: 12 }}>
                         WORKFLOW
                     </span>
                     <h2>How It Works</h2>
@@ -309,8 +323,8 @@ export default function Home() {
                 </motion.div>
             </section>
 
-            {/* Tile 5: Parchment Past Research Highlights & FAQs (Full-Bleed #f5f5f7) */}
-            <section className="product-tile-parchment" id="faq">
+            {/* Section 5: Past Research Papers & FAQs */}
+            <section className="section-papers-faq" id="faq">
                 <motion.div
                     className="section-title"
                     initial={{ opacity: 0, y: 20 }}
@@ -384,7 +398,7 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* Parchment Dense Footer */}
+            {/* Apple Parchment / Dark Footer */}
             <footer className="footer">
                 <div className="footer-container">
                     <div className="footer-grid">
